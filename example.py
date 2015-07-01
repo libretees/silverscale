@@ -3,7 +3,6 @@ import time
 
 for d in hid.enumerate():
     keys = d.keys()
-    keys.sort()
     for key in keys:
         print('%s : %s' % (key, d[key]))
     print('\n')
@@ -11,8 +10,8 @@ for d in hid.enumerate():
 try:
     print('Opening device')
     h = hid.device()
-    h.open(0x461, 0x20)
-    #h.open(0x1941, 0x8021) # Fine Offset USB Weather Station
+
+    h.open(0x922, 0x8004) # idVendor idProduct
 
     print('Manufacturer: %s' % h.get_manufacturer_string())
     print('Product: %s' % h.get_product_string())
