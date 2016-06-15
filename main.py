@@ -4,41 +4,69 @@
 import hid
 import time
 
-WEIGHT_UNIT = {
-    0x0: 'units',  # Unknown Unit
-    0x1: 'mg',     # Milligram
-    0x2: 'g',      # Gram
-    0x3: 'kg',     # Kilogram
-    0x4: 'ct',     # Carat
-    0x5: 'taels',  # Taels
-    0x6: 'gr',     # Grains
-    0x7: 'dwt',    # Pennyweight
-    0x8: 'tonnes', # Metric Tons
-    0x9: 'tons',   # Avoir Ton
-    0xA: 'ozt',    # Troy Ounce
-    0xB: 'oz',     # Ounce
-    0xC: 'lbs'     # Pound
+# REPORT_CLASSES = {
+#     0x1: AttributeReport,
+#     0x2: ControlReport,
+#     0x3: DataReport,
+#     0x4: StatusReport,
+#     0x5: WeightLimitReport,
+#     0x6: StatisticsReport
+# }
+
+SCALE_CLASSES = {
+    0x1: 'Scale Class I Metric',
+    0x2: 'Scale Class I Metric',
+    0x3: 'Scale Class II Metric',
+    0x4: 'Scale Class III Metric',
+    0x5: 'Scale Class IIIL Metric',
+    0x6: 'Scale Class IV Metric',
+    0x7: 'Scale Class III English',
+    0x8: 'Scale Class IIIL English',
+    0x9: 'Scale Class IV English',
+    0xA: 'Scale Class Generic',
+    0xB: 'Reserved (0x2B)',
+    0xC: 'Reserved (0x2C)',
+    0xD: 'Reserved (0x2D)',
+    0xE: 'Reserved (0x2E)',
+    0xF: 'Reserved (0x2F)'
 }
 
-SCALE_STATUS = {
-    0x0: 'Unknown Status',
-    0x1: 'Fault',
-    0x2: 'Stable at Center of Zero',
-    0x3: 'In Motion',
-    0x4: 'Weight Stable',
-    0x5: 'Under Zero',
-    0x6: 'Over Weight Limit',
-    0x7: 'Requires Calibration',
-    0x8: 'Requires Re-zeroing',
+WEIGHT_UNITS = {
+    0x0: 'units',  # Unknown Units
+    0x1: 'mg',     # Milligrams
+    0x2: 'g',      # Grams
+    0x3: 'kg',     # Kilograms
+    0x4: 'ct',     # Carats
+    0x5: 'taels',  # Taels
+    0x6: 'gr',     # Grains
+    0x7: 'dwt',    # Pennyweights
+    0x8: 'tonnes', # Metric Tons
+    0x9: 'tons',   # Avoir Tons
+    0xA: 'ozt',    # Troy Ounces
+    0xB: 'oz',     # Ounces
+    0xC: 'lbs'     # Pounds
+}
+
+SCALE_STATUSES = {
+    0x00: 'Unknown Status',
+    0x01: 'Fault',
+    0x02: 'Stable at Center of Zero',
+    0x03: 'In Motion',
+    0x04: 'Weight Stable',
+    0x05: 'Under Zero',
+    0x06: 'Over Weight Limit',
+    0x07: 'Requires Calibration',
+    0x08: 'Requires Re-zeroing',
+    0x09: "Reserved (0x9)",
+    0x0A: "Reserved (0xA)",
+    0x0B: "Reserved (0xB)",
+    0x0C: "Reserved (0xC)",
+    0x0D: "Reserved (0xD)",
+    0x0E: "Reserved (0xE)",
+    0x0F: "Reserved (0xF)",
     0x10: 'Zero Scale',
     0x11: 'Enforced Zero Return'
 }
-
-
-def twos_complement(val, bits=8):
-    if (val & (1 << (bits - 1))): # If sign bit is set e.g., 8bit: 128-255
-        val = val - (1 << bits)   # compute negative value
-    return val
 
 
 for device_info in hid.enumerate():
@@ -77,16 +105,16 @@ try:
                 res = h.write([0x80, i, j])
                 report = h.read(6)
                 if report:
-                    (report_type, scale_status, unit, scaling, weight_lsb,
+                    (report_type, scale_status, unit, scale, weight_lsb,
                     weight_msb) = tuple(report)
 
-                    weight = (weight_msb << 8) | weight_lsb
-                    weight = weight * pow(10, twos_complement(scaling))
+                    scale = (~scale & 0xFF) - 1 if (scale & 0x80) else scale
+                    weight = (weight_msb << 8 | weight_lsb) * pow(10, scale)
 
                     print(report)
-                    print('scale status:', SCALE_STATUS[scale_status])
+                    print('scale status:', SCALE_STATUSES[scale_status])
                     print('weight:', weight)
-                    print('unit:', WEIGHT_UNIT[unit])
+                    print('unit:', WEIGHT_UNITS[unit])
 
                 time.sleep(0.05)
 
