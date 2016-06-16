@@ -4,33 +4,6 @@
 import hid
 import time
 
-# REPORT_CLASSES = {
-#     0x1: AttributeReport,
-#     0x2: ControlReport,
-#     0x3: DataReport,
-#     0x4: StatusReport,
-#     0x5: WeightLimitReport,
-#     0x6: StatisticsReport
-# }
-
-SCALE_CLASSES = {
-    0x1: 'Scale Class I Metric',
-    0x2: 'Scale Class I Metric',
-    0x3: 'Scale Class II Metric',
-    0x4: 'Scale Class III Metric',
-    0x5: 'Scale Class IIIL Metric',
-    0x6: 'Scale Class IV Metric',
-    0x7: 'Scale Class III English',
-    0x8: 'Scale Class IIIL English',
-    0x9: 'Scale Class IV English',
-    0xA: 'Scale Class Generic',
-    0xB: 'Reserved (0x2B)',
-    0xC: 'Reserved (0x2C)',
-    0xD: 'Reserved (0x2D)',
-    0xE: 'Reserved (0x2E)',
-    0xF: 'Reserved (0x2F)'
-}
-
 WEIGHT_UNITS = {
     0x0: 'units',  # Unknown Units
     0x1: 'mg',     # Milligrams
@@ -68,6 +41,66 @@ SCALE_STATUSES = {
     0x11: 'Enforced Zero Return'
 }
 
+class DataReport(object):
+    def __init__(self, report_data=[]):
+        assert len(report_data) == 6
+
+        _, status, unit, scale, weight_lsb, weight_msb = tuple(report_data)
+
+        self._status = SCALE_STATUSES[status]
+        self._unit = WEIGHT_UNITS[unit]
+        self._scale = (~scale & 0xFF) - 1 if (scale & 0x80) else scale
+        self._weight = (weight_msb << 8 | weight_lsb) * pow(10, self._scale)
+
+
+    def __str__(self):
+        return '[%s] %s %s' % (self.status, self.weight, self.unit)
+
+    @property
+    def stable(self):
+        return self._status == 'Weight Stable'
+
+    @property
+    def status(self):
+        return self._status
+
+    @property
+    def unit(self):
+        return self._unit
+
+    @property
+    def weight(self):
+        return round(self._weight, 1) if self.unit == 'oz' else self._weight
+
+
+REPORT_TYPES = {
+    # 0x1: AttributeReport,
+    # 0x2: ControlReport,
+    0x3: DataReport,
+    # 0x4: StatusReport,
+    # 0x5: WeightLimitReport,
+    # 0x6: StatisticsReport
+}
+
+SCALE_CLASSES = {
+    0x1: 'Scale Class I Metric',
+    0x2: 'Scale Class I Metric',
+    0x3: 'Scale Class II Metric',
+    0x4: 'Scale Class III Metric',
+    0x5: 'Scale Class IIIL Metric',
+    0x6: 'Scale Class IV Metric',
+    0x7: 'Scale Class III English',
+    0x8: 'Scale Class IIIL English',
+    0x9: 'Scale Class IV English',
+    0xA: 'Scale Class Generic',
+    0xB: 'Reserved (0x2B)',
+    0xC: 'Reserved (0x2C)',
+    0xD: 'Reserved (0x2D)',
+    0xE: 'Reserved (0x2E)',
+    0xF: 'Reserved (0x2F)'
+}
+
+
 
 for device_info in hid.enumerate():
     vendor_id = device_info.get('vendor_id')
@@ -103,18 +136,10 @@ try:
         for i in [0, 1]:
             for j in [0, 1]:
                 res = h.write([0x80, i, j])
-                report = h.read(6)
-                if report:
-                    (report_type, scale_status, unit, scale, weight_lsb,
-                    weight_msb) = tuple(report)
-
-                    scale = (~scale & 0xFF) - 1 if (scale & 0x80) else scale
-                    weight = (weight_msb << 8 | weight_lsb) * pow(10, scale)
-
+                report_data = h.read(6)
+                if report_data:
+                    report = REPORT_TYPES[report_data[0]](report_data)
                     print(report)
-                    print('scale status:', SCALE_STATUSES[scale_status])
-                    print('weight:', weight)
-                    print('unit:', WEIGHT_UNITS[unit])
 
                 time.sleep(0.05)
 
