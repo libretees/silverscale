@@ -4,6 +4,24 @@
 import hid
 import time
 
+SCALE_CLASSES = {
+    0x1: 'Scale Class I Metric',
+    0x2: 'Scale Class I Metric',
+    0x3: 'Scale Class II Metric',
+    0x4: 'Scale Class III Metric',
+    0x5: 'Scale Class IIIL Metric',
+    0x6: 'Scale Class IV Metric',
+    0x7: 'Scale Class III English',
+    0x8: 'Scale Class IIIL English',
+    0x9: 'Scale Class IV English',
+    0xA: 'Scale Class Generic',
+    0xB: 'Reserved (0x2B)',
+    0xC: 'Reserved (0x2C)',
+    0xD: 'Reserved (0x2D)',
+    0xE: 'Reserved (0x2E)',
+    0xF: 'Reserved (0x2F)'
+}
+
 WEIGHT_UNITS = {
     0x0: 'units',  # Unknown Units
     0x1: 'mg',     # Milligrams
@@ -41,20 +59,50 @@ SCALE_STATUSES = {
     0x11: 'Enforced Zero Return'
 }
 
+class AttributeReport(object):
+    def __init__(self, report_data=[]):
+        assert len(report_data == 3)
+        _, scale_class, units = tuple(report_data)
+
+        self._scale_class = SCALE_CLASSES[scale_class]
+        self._units = WEIGHT_UNITS[units]
+
+    @property
+    def scale_class(self):
+        return self._scale_class
+
+
+class ControlReport(object):
+    def __init__(self, report_data=[]):
+        assert len(report_data == 2)
+
+        _, control_data = tuple(report_data)
+
+        self._enforced_zero_return = (control_data & 0x1)
+        self._zero_scale = (control_data & 0x2)
+
+    @property
+    def ezr_enabled(self):
+        return bool(self._enforced_zero_return)
+
+    @property
+    def zs_enabled(self):
+        return bool(self._zero_scale)
+
+
 class DataReport(object):
     def __init__(self, report_data=[]):
         assert len(report_data) == 6
 
-        _, status, unit, scale, weight_lsb, weight_msb = tuple(report_data)
+        _, status, units, scale, weight_lsb, weight_msb = tuple(report_data)
 
         self._status = SCALE_STATUSES[status]
-        self._unit = WEIGHT_UNITS[unit]
+        self._units = WEIGHT_UNITS[units]
         self._scale = (~scale & 0xFF) - 1 if (scale & 0x80) else scale
         self._weight = (weight_msb << 8 | weight_lsb) * pow(10, self._scale)
 
-
     def __str__(self):
-        return '[%s] %s %s' % (self.status, self.weight, self.unit)
+        return '[%s] %s %s' % (self.status, self.weight, self.units)
 
     @property
     def stable(self):
@@ -65,39 +113,21 @@ class DataReport(object):
         return self._status
 
     @property
-    def unit(self):
-        return self._unit
+    def units(self):
+        return self._units
 
     @property
     def weight(self):
-        return round(self._weight, 1) if self.unit == 'oz' else self._weight
+        return round(self._weight, 1) if self.units == 'oz' else self._weight
 
 
 REPORT_TYPES = {
-    # 0x1: AttributeReport,
-    # 0x2: ControlReport,
+    0x1: AttributeReport,
+    0x2: ControlReport,
     0x3: DataReport,
     # 0x4: StatusReport,
     # 0x5: WeightLimitReport,
     # 0x6: StatisticsReport
-}
-
-SCALE_CLASSES = {
-    0x1: 'Scale Class I Metric',
-    0x2: 'Scale Class I Metric',
-    0x3: 'Scale Class II Metric',
-    0x4: 'Scale Class III Metric',
-    0x5: 'Scale Class IIIL Metric',
-    0x6: 'Scale Class IV Metric',
-    0x7: 'Scale Class III English',
-    0x8: 'Scale Class IIIL English',
-    0x9: 'Scale Class IV English',
-    0xA: 'Scale Class Generic',
-    0xB: 'Reserved (0x2B)',
-    0xC: 'Reserved (0x2C)',
-    0xD: 'Reserved (0x2D)',
-    0xE: 'Reserved (0x2E)',
-    0xF: 'Reserved (0x2F)'
 }
 
 
