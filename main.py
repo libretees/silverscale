@@ -121,11 +121,23 @@ class DataReport(object):
         return round(self._weight, 1) if self.units == 'oz' else self._weight
 
 
+class StatusReport(object):
+    def __init__(self, report_data=[]):
+        assert len(report_data) == 2
+
+        _, status = tuple(report_data)
+        self.status = SCALE_STATUSES[status]
+
+    @property
+    def status(self):
+        return self.status
+
+
 REPORT_TYPES = {
     0x1: AttributeReport,
     0x2: ControlReport,
     0x3: DataReport,
-    # 0x4: StatusReport,
+    0x4: StatusReport,
     # 0x5: WeightLimitReport,
     # 0x6: StatisticsReport
 }
