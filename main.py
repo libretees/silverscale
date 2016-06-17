@@ -152,15 +152,37 @@ class WeightLimitReport(object):
         return round(self._weight, 1) if self.units == 'oz' else self._weight
 
 
+class StatisticsReport(object):
+    def __init__(self, report_data=[]):
+        assert len(report_data) == 5
+        (
+            _,
+            calibration_lsb,
+            calibration_msb,
+            rezero_lsb,
+            rezero_msb
+        ) = tuple(report_data)
+
+        self._calibration_count = (calibration_msb << 8 | calibration_lsb)
+        self._rezero_count = (rezero_msb << 8 | rezero_lsb)
+
+    @property
+    def calibration_count(self):
+        return self._calibration_count
+
+    @property
+    def rezero_count(self):
+        return self._rezero_count
+
+
 REPORT_TYPES = {
     0x1: AttributeReport,
     0x2: ControlReport,
     0x3: DataReport,
     0x4: StatusReport,
     0x5: WeightLimitReport,
-    # 0x6: StatisticsReport
+    0x6: StatisticsReport
 }
-
 
 
 for device_info in hid.enumerate():
