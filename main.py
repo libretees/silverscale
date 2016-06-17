@@ -94,12 +94,12 @@ class DataReport(object):
     def __init__(self, report_data=[]):
         assert len(report_data) == 6
 
-        _, status, units, scale, weight_lsb, weight_msb = tuple(report_data)
+        _, status, units, scaling, weight_lsb, weight_msb = tuple(report_data)
 
         self._status = SCALE_STATUSES[status]
         self._units = WEIGHT_UNITS[units]
-        self._scale = (~scale & 0xFF) - 1 if (scale & 0x80) else scale
-        self._weight = (weight_msb << 8 | weight_lsb) * pow(10, self._scale)
+        self._scaling = (~scaling & 0xFF) - 1 if (scaling & 0x80) else scaling
+        self._weight = (weight_msb << 8 | weight_lsb) * pow(10, self._scaling)
 
     def __str__(self):
         return '[%s] %s %s' % (self.status, self.weight, self.units)
@@ -133,12 +133,31 @@ class StatusReport(object):
         return self.status
 
 
+class WeightLimitReport(object):
+    def __init__(self, report_data=[]):
+        assert len(report_data) == 5
+
+        _, units, scaling, weight_lsb, weight_msb = tuple(report_data)
+
+        self._units = WEIGHT_UNITS[units]
+        self._scaling = (~scaling & 0xFF) - 1 if (scaling & 0x80) else scaling
+        self._weight = (weight_msb << 8 | weight_lsb) * pow(10, self._scaling)
+
+    @property
+    def units(self):
+        return self._units
+
+    @property
+    def weight(self):
+        return round(self._weight, 1) if self.units == 'oz' else self._weight
+
+
 REPORT_TYPES = {
     0x1: AttributeReport,
     0x2: ControlReport,
     0x3: DataReport,
     0x4: StatusReport,
-    # 0x5: WeightLimitReport,
+    0x5: WeightLimitReport,
     # 0x6: StatisticsReport
 }
 
