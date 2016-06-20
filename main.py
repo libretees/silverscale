@@ -3,6 +3,7 @@
 
 import hid
 import time
+from silverscale.usb_ids import SUPPORTED_DEVICES
 
 SCALE_CLASSES = {
     0x1: 'Scale Class I Metric',
@@ -184,42 +185,43 @@ REPORT_TYPES = {
     0x6: StatisticsReport
 }
 
+connected_devices = [
+    (device_info.get('vendor_id'), device_info.get('product_id'))
+    for device_info in hid.enumerate()
+]
 
-for device_info in hid.enumerate():
-    vendor_id = device_info.get('vendor_id')
-    product_id = device_info.get('product_id')
+connected_scales = [
+    device for device in connected_devices if device in SUPPORTED_DEVICES
+]
 
-    if vendor_id and product_id:
-        try:
-            device = hid.device()
-            device.open(vendor_id, product_id)
-        except IOError as e:
-            print(e)
-        else:
-            print('Manufacturer: %s' % device.get_manufacturer_string())
-            print('Product: %s' % device.get_product_string())
-            print('Serial No: %s' % device.get_serial_number_string())
+scales = []
+for vendor_id, product_id in connected_scales:
+   try:
+       device = hid.device()
+       device.open(vendor_id, product_id) # idVendor idProduct
+   except IOError as e:
+       print(e)
+   else:
+       scales.append(device)
 
+if not scales:
+    print('No scales are connected!')
 
-try:
-    print('Opening device')
-    h = hid.device()
+for scale in scales:
 
-    h.open(0x922, 0x8004) # idVendor idProduct
-
-    print('Manufacturer: %s' % h.get_manufacturer_string())
-    print('Product: %s' % h.get_product_string())
-    print('Serial No: %s' % h.get_serial_number_string())
+    print('Manufacturer: %s' % scale.get_manufacturer_string())
+    print('Product: %s' % scale.get_product_string())
+    print('Serial No: %s' % scale.get_serial_number_string())
 
     # try non-blocking mode by uncommenting the next line
-    #h.set_nonblocking(1)
+    #scale.set_nonblocking(1)
 
     # try writing some data to the device
     for k in range(10):
         for i in [0, 1]:
             for j in [0, 1]:
-                res = h.write([0x80, i, j])
-                report_data = h.read(6)
+                res = scale.write([0x80, i, j])
+                report_data = scale.read(6)
                 if report_data:
                     report = REPORT_TYPES[report_data[0]](report_data)
                     print(report)
@@ -227,12 +229,7 @@ try:
                 time.sleep(0.05)
 
     print('Closing device')
-    h.close()
-
-except IOError as ex:
-    print(ex)
-    print('You probably don\'t have the hard coded test hid. Update the hid.device line')
-    print('in this script with one from the enumeration list output above and try again.')
+    scale.close()
 
 print('Done')
 # =======

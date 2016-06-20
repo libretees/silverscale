@@ -3,55 +3,62 @@
 
 USB_IDS = {
     0x0b67: {
-        'vendor': 'Fairbanks Scales',
+        'name': 'Fairbanks Scales',
         'devices': {
             0x555e: 'SCB-R9000'
         }
     },
     0x0eb8: {
-        'vendor': 'Mettler Toledo',
+        'name': 'Mettler Toledo',
         'devices': {
             0x2200: 'Ariva Scale',
             0xf000: 'PS60 Scale'
         }
     },
     0x0922: {
-        'vendor': 'Dymo-CoStar Corp.',
+        'name': 'Dymo-CoStar Corp.',
         'devices': {
             0x8003: '1772057 Digital Postal Scale',
             0x8004: 'M25 Digital Postal Scale'
         }
     },
     0x1446: {
-        'vendor': 'X.J.GROUP',
+        'name': 'X.J.GROUP',
         'devices': {
             0x6a73: 'Stamps.com Model 510 5LB Scale',
             0x6a78: 'DYMO Endicia 75lb Digital Scale'
         }
     },
     0x2233: {
-        'vendor': 'RadioShack Corporation',
+        'name': 'RadioShack Corporation',
         'devices': {
             0x6323: 'USB Electronic Scale'
         }
     },
     0x2474: {
-        'vendor': 'Stamps.com',
+        'name': 'Stamps.com',
         'devices': {
             0x0550: 'Stainless Steel 5 lb. Digital Scale',
             0x3550: 'Stainless Steel 35 lb. Digital Scale'
         }
     },
     0x6096: {
-        'vendor': 'SANFORD',
+        'name': 'SANFORD',
         'devices': {
             0x0158: 'Dymo 10 lb USB Postal Scale'
         }
     },
     0x7b7c: {
-        'vendor': 'XM',
+        'name': 'XM',
         'devices': {
             0x0100: 'Elane UParcel 30lb'
         }
     }
 }
+
+SUPPORTED_DEVICES = {
+    (vendor_id, device_id): '%s %s' % (vendor_info.get('name'), device_name)
+    for vendor_id, vendor_info in USB_IDS.items()
+    for device_id, device_name in vendor_info.get('devices',{}).items()
+}
+
