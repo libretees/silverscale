@@ -18,7 +18,7 @@ USB_IDS = {
     0x0922: {
         'name': 'Dymo-CoStar Corp.',
         'devices': {
-            0x8003: '1772057 Digital Postal Scale',
+            0x8003: 'M10 Digital Postal Scale',
             0x8004: 'M25 Digital Postal Scale'
         }
     },
