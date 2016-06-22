@@ -1,47 +1,96 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import hid
+import sys
 import time
+import hid
 from silverscale.reports import REPORT_TYPES
 from silverscale.usb_ids import SUPPORTED_DEVICES
 
-connected_devices = [
-    (device_info.get('vendor_id'), device_info.get('product_id'))
-    for device_info in hid.enumerate()
-]
 
-connected_scales = [
-    device for device in connected_devices if device in SUPPORTED_DEVICES
-]
+class USBDevice(object):
+    def __init__(self, device):
+        assert device is not None
+        self._device = device
 
-class Scale(hid.device):
-    def __init__(self, *args, **kwargs):
-        super(Scale, self).__init__(*args, **kwargs)
-        self._vendor_id, self._product_id = args
+    @property
+    def manager(self):
+        return self._manager()
 
-        self._open_device()
+    @property
+    def product(self):
+        return self._device.get_product_string()
 
-    def _open_device(self):
-        self.open(vendor_id, product_id) # idVendor idProduct
+    @property
+    def manufacturer(self):
+        return self._device.get_manufacturer_string()
 
-scales = []
-for vendor_id, product_id in connected_scales:
-   try:
-       scale = Scale(vendor_id, product_id) # idVendor idProduct
-   except IOError as e:
-       print(e)
-   else:
-       print('Manufacturer: %s' % scale.get_manufacturer_string())
-       print('Product: %s' % scale.get_product_string())
-       print('Serial No: %s' % scale.get_serial_number_string())
-       scales.append(scale)
-       print(scales)
+    @property
+    def serial_number(self):
+        return self._device.get_serial_number_string()
 
-if not scales:
-    print('No scales are connected!')
+    def connect(self):
+        if self not in self.manager:
+            self.manager.add(self)
 
-for scale in scales:
+    def disconnect(self):
+        self._device.close()
+        self.manager.remove(self)
+
+    def read(self, packet_size=8):
+        return self._device.read(packet_size)
+
+
+class _DeviceManager(object):
+
+    def __init__(self):
+        usb_ids = [
+            (device_info.get('vendor_id'), device_info.get('product_id'))
+            for device_info in hid.enumerate()
+            if (device_info.get('vendor_id'), device_info.get('product_id'))
+            in SUPPORTED_DEVICES
+        ]
+
+        devices = []
+        for vendor_id, product_id in usb_ids:
+            print('opening %x %x' % (vendor_id, product_id))
+            try:
+                device = hid.device()
+                device.open(vendor_id, product_id) # idVendor idProduct
+            except IOError as e:
+                sys.exit(str(e))
+            else:
+                devices.append(device)
+
+        self._devices = [USBDevice(device) for device in devices]
+
+    def __call__(self, *args, **kwargs):
+        return self
+
+    def __contains__(self, item):
+        return item in self._devices
+
+    @property
+    def devices(self):
+        return self._devices
+
+    def add(self, x):
+        self._devices.append(x)
+
+    def remove(self, x):
+        self._devices.remove(x)
+
+    def close(self):
+        for device in self._devices:
+            device.disconnect()
+
+
+DeviceManager = _DeviceManager()
+USBDevice._manager = DeviceManager
+
+device_manager = DeviceManager()
+
+for device in device_manager.devices:
 
 
     # try non-blocking mode by uncommenting the next line
@@ -49,19 +98,18 @@ for scale in scales:
 
     # try writing some data to the device
     for k in range(10):
-        for i in [0, 1]:
-            for j in [0, 1]:
-                res = scale.write([0x80, i, j])
-                report_data = scale.read(6)
-                if report_data:
-                    report = REPORT_TYPES[report_data[0]](report_data)
-                    print(report)
+        # for i in [0, 1]:
+        #     for j in [0, 1]:
+        #         res = scale.write([0x80, i, j])
+        #        print(res, type(res))
+        report_data = device.read(6)
+        if report_data:
+            report = REPORT_TYPES[report_data[0]](report_data)
+            print(report)
 
-                time.sleep(0.05)
+        time.sleep(0.05)
 
-    print('Closing device')
-    scale.close()
-
+device_manager.close()
 print('Done')
 # =======
 # from importlib import import_module

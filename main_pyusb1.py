@@ -17,6 +17,10 @@ class USBDevice(object):
         self._reattach = False
 
     @property
+    def manager(self):
+        return self._manager()
+
+    @property
     def product(self):
         return usb.util.get_string(self._device, self._device.iProduct)
 
@@ -47,8 +51,8 @@ class USBDevice(object):
         # first endpoint
         self._endpoint = self._device[0][(0,0)][0]
 
-        if self not in self._manager():
-            self.manager().append(self)
+        if self not in self.manager:
+            self.manager.add(self)
 
     def disconnect(self):
         self._device.reset()
@@ -57,7 +61,7 @@ class USBDevice(object):
         if self._reattach:
             self._device.attach_kernel_driver(0)
 
-        self._manager().remove(self)
+        self.manager.remove(self)
 
     def read(self, packet_size=None):
         if packet_size is None:
@@ -83,6 +87,9 @@ class _DeviceManager(object):
     @property
     def devices(self):
         return self._devices
+
+    def add(self, x):
+        self._devices.append(x)
 
     def remove(self, x):
         self._devices.remove(x)
