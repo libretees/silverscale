@@ -47,6 +47,9 @@ class USBDevice(object):
         # first endpoint
         self._endpoint = self._device[0][(0,0)][0]
 
+        if self not in self._manager():
+            self.manager().append(self)
+
     def disconnect(self):
         self._device.reset()
         usb.util.dispose_resources(self._device)
@@ -54,8 +57,7 @@ class USBDevice(object):
         if self._reattach:
             self._device.attach_kernel_driver(0)
 
-        if self._manager:
-            self._manager().remove(self)
+        self._manager().remove(self)
 
     def read(self, packet_size=None):
         if packet_size is None:
@@ -74,6 +76,9 @@ class _DeviceManager(object):
 
     def __call__(self, *args, **kwargs):
         return self
+
+    def __contains__(self, item):
+        return item in self._devices
 
     @property
     def devices(self):
