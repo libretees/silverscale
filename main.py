@@ -15,24 +15,34 @@ connected_scales = [
     device for device in connected_devices if device in SUPPORTED_DEVICES
 ]
 
+class Scale(hid.device):
+    def __init__(self, *args, **kwargs):
+        super(Scale, self).__init__(*args, **kwargs)
+        self._vendor_id, self._product_id = args
+
+        self._open_device()
+
+    def _open_device(self):
+        self.open(vendor_id, product_id) # idVendor idProduct
+
 scales = []
 for vendor_id, product_id in connected_scales:
    try:
-       device = hid.device()
-       device.open(vendor_id, product_id) # idVendor idProduct
+       scale = Scale(vendor_id, product_id) # idVendor idProduct
    except IOError as e:
        print(e)
    else:
-       scales.append(device)
+       print('Manufacturer: %s' % scale.get_manufacturer_string())
+       print('Product: %s' % scale.get_product_string())
+       print('Serial No: %s' % scale.get_serial_number_string())
+       scales.append(scale)
+       print(scales)
 
 if not scales:
     print('No scales are connected!')
 
 for scale in scales:
 
-    print('Manufacturer: %s' % scale.get_manufacturer_string())
-    print('Product: %s' % scale.get_product_string())
-    print('Serial No: %s' % scale.get_serial_number_string())
 
     # try non-blocking mode by uncommenting the next line
     #scale.set_nonblocking(1)
