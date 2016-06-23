@@ -38,25 +38,30 @@ class USBDevice(object):
         self.manager.remove(self)
 
     def read(self, packet_size=8):
-        return self._device.read(packet_size)
+        report = None
+        try:
+            report = self._device.read(packet_size)
+        except IOError as e:
+            sys.exit(str(e))
+        else:
+            return report
 
 
 class _DeviceManager(object):
 
     def __init__(self):
-        usb_ids = [
-            (device_info.get('vendor_id'), device_info.get('product_id'))
+        connected_devices = [
+            device_info.get('path')
             for device_info in hid.enumerate()
             if (device_info.get('vendor_id'), device_info.get('product_id'))
-            in SUPPORTED_DEVICES
+            in SUPPORTED_DEVICES and device_info.get('path') is not None
         ]
 
         devices = []
-        for vendor_id, product_id in usb_ids:
-            print('opening %x %x' % (vendor_id, product_id))
+        for path in connected_devices:
             try:
                 device = hid.device()
-                device.open(vendor_id, product_id) # idVendor idProduct
+                device.open_path(path)
             except IOError as e:
                 sys.exit(str(e))
             else:
@@ -78,7 +83,8 @@ class _DeviceManager(object):
         self._devices.append(x)
 
     def remove(self, x):
-        self._devices.remove(x)
+        if x in self._devices:
+            self._devices.remove(x)
 
     def close(self):
         for device in self._devices:
@@ -90,8 +96,10 @@ USBDevice._manager = DeviceManager
 
 device_manager = DeviceManager()
 
-for device in device_manager.devices:
+print('Devices found:', device_manager.devices)
 
+for device in device_manager.devices:
+    print(device.manufacturer, device.product, device.serial_number)
 
     # try non-blocking mode by uncommenting the next line
     #scale.set_nonblocking(1)

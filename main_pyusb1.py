@@ -92,7 +92,8 @@ class _DeviceManager(object):
         self._devices.append(x)
 
     def remove(self, x):
-        self._devices.remove(x)
+        if x in self._devices:
+            self._devices.remove(x)
 
     def close(self):
         for device in self._devices:
@@ -106,6 +107,7 @@ device_manager = DeviceManager()
 
 for device in device_manager.devices:
     device.connect()
+    print(device.manufacturer, device.product, device.serial_number)
 
     # read a data packet
     attempts = 10
