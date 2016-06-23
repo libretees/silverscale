@@ -20,6 +20,7 @@ USB_IDS = {
         'devices': {
             0x8003: 'M10 10 lb Digital Postal Scale',
             0x8004: 'M25 25 lb Digital Postal Scale',
+            0x8005: 'M5 5 lb Digital Postal Scale',
             0x8007: 'S100 100 lb Digital Shipping Scale',
             0x8009: 'S250 250 lb Digital Shipping Scale'
         }
