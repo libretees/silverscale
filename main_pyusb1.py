@@ -7,10 +7,6 @@ import usb.util
 from silverscale.usb_ids import SUPPORTED_DEVICES
 
 
-
-# find the USB device
-# device = usb.core.find(idVendor=VENDOR_ID,
-#                         idProduct=PRODUCT_ID)
 class USBDevice(object):
     def __init__(self, device):
         self._device = device
@@ -48,8 +44,23 @@ class USBDevice(object):
 
         # use the first/default configuration
         self._device.set_configuration()
-        # first endpoint
-        self._endpoint = self._device[0][(0,0)][0]
+        configuration = self._device.get_active_configuration()
+
+        # Match the first IN endpoint.
+        interface = configuraton[(0,0)]
+        self._endpoint_in = usb.util.find_descriptor(
+            interface,
+            custom_match = \
+            lambda e: \
+                usb.util.endpoint_direction(e.bEndpointAddress) == \
+                usb.util.ENDPOINT_IN)
+
+        self._endpoint_out = usb.util.find_descriptor(
+            interface,
+            custom_match = \
+            lambda e: \
+                usb.util.endpoint_direction(e.bEndpointAddress) == \
+                usb.util.ENDPOINT_OUT)
 
         if self not in self.manager:
             self.manager.add(self)
@@ -65,9 +76,18 @@ class USBDevice(object):
 
     def read(self, packet_size=None):
         if packet_size is None:
-            packet_size = self._endpoint.wMaxPacketSize
+            packet_size = self._endpoint_in.wMaxPacketSize
 
-        return self._device.read(self._endpoint.bEndpointAddress, packet_size)
+        report = self._device.read(self._endpoint_in.bEndpointAddress, packet_size)
+
+        return list(report)
+
+    def write(self, packet):
+        result = None
+        if self._endpoint_out is not None:
+            result = self._endpoint_out.write(packet)
+
+        return result == len(packet)
 
 
 class _DeviceManager(object):

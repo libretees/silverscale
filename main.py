@@ -38,13 +38,22 @@ class USBDevice(object):
         self.manager.remove(self)
 
     def read(self, packet_size=8):
-        report = None
-        try:
-            report = self._device.read(packet_size)
-        except IOError as e:
-            sys.exit(str(e))
-        else:
-            return report
+
+        packet_size = min(packet_size, 8)
+
+        report = []
+        while len(report) < packet_size:
+            try:
+                bytes_read = self._device.read(packet_size)
+            except IOError as e:
+                sys.exit(str(e))
+            else:
+                report += bytes_read
+
+        return report
+
+    def write(self, packet)
+        return self._device.write(packet) == len(packet)
 
 
 class _DeviceManager(object):
