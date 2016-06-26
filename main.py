@@ -52,7 +52,7 @@ class USBDevice(object):
 
         return report
 
-    def write(self, packet)
+    def write(self, packet):
         return self._device.write(packet) == len(packet)
 
 
