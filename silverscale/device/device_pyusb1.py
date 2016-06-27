@@ -11,7 +11,6 @@ class USBDevice(object):
     def __init__(self, device):
         self._device = device
         self._reattach = False
-        print('here')
 
     @property
     def manager(self):
@@ -30,7 +29,6 @@ class USBDevice(object):
         return usb.util.get_string(self._device, self._device.iSerialNumber)
 
     def connect(self):
-        print('connect')
         for configuraton in self._device:
             for interface in configuraton:
                 interface_number = interface.bInterfaceNumber
@@ -80,7 +78,13 @@ class USBDevice(object):
         if packet_size is None:
             packet_size = self._endpoint_in.wMaxPacketSize
 
-        report = self._device.read(self._endpoint_in.bEndpointAddress, packet_size)
+        report = None
+        while report is None:
+            try:
+                report = self._device.read(self._endpoint_in.bEndpointAddress,
+                                           packet_size)
+            except usb.core.USBError as e:
+                report = None
 
         return list(report)
 
@@ -92,7 +96,7 @@ class USBDevice(object):
         return result == len(packet)
 
 
-class _DeviceManager(object):
+class _USBDeviceManager(object):
 
     def __init__(self):
         devices = usb.core.find(find_all=True,
@@ -122,27 +126,6 @@ class _DeviceManager(object):
             device.disconnect()
 
 
-DeviceManager = _DeviceManager()
-USBDevice._manager = DeviceManager
-
-device_manager = DeviceManager()
-
-for device in device_manager.devices:
-    device.connect()
-    print(device.manufacturer, device.product, device.serial_number)
-
-    # read a data packet
-    attempts = 10
-    data = None
-    while data is None and attempts > 0:
-        try:
-            data = device.read()
-            print(data)
-        except usb.core.USBError as e:
-            data = None
-            if e.args == ('Operation timed out',):
-                attempts -= 1
-                continue
-
-device_manager.close()
+USBDeviceManager = _USBDeviceManager()
+USBDevice._manager = USBDeviceManager
 
