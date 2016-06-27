@@ -4,7 +4,7 @@
 import sys
 import usb.core
 import usb.util
-from usb_ids import SUPPORTED_DEVICES
+from .usb_ids import SUPPORTED_DEVICES
 
 
 class USBDevice(object):
