@@ -3,7 +3,7 @@
 
 import sys
 import hid
-from .usb_ids import SUPPORTED_DEVICES
+from ..usb_ids import SUPPORTED_DEVICES
 
 
 class USBDevice(object):

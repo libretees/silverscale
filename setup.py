@@ -3,7 +3,7 @@ from distutils.core import setup
 
 setup(
     name = 'silverscale',
-    version = '0.2',
+    version = '0.3',
     description = 'Retrieve data from HID USB Scales.',
     author = 'Jared Contrascere',
     author_email = 'jcontra@gmail.com',

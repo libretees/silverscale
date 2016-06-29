@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from silverscale.usb_ids import SUPPORTED_DEVICES
 
 rule_template = """# %s
