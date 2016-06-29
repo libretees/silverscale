@@ -4,7 +4,7 @@
 import sys
 import usb1
 from libusb1 import USB_ENDPOINT_DIR_MASK
-from silverscale.usb_ids import SUPPORTED_DEVICES
+from .usb_ids import SUPPORTED_DEVICES
 
 class USBDevice(object):
     def __init__(self, device):

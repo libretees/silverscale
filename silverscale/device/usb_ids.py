@@ -22,7 +22,8 @@ USB_IDS = {
             0x8004: 'M25 25 lb Digital Postal Scale',
             0x8005: 'M5 5 lb Digital Postal Scale',
             0x8007: 'S100 100 lb Digital Shipping Scale',
-            0x8009: 'S250 250 lb Digital Shipping Scale'
+            0x8009: 'S250 250 lb Digital Shipping Scale',
+            0x800b: 'S400 400 lb Digital Shipping Scale'
         }
     },
     0x1446: {
