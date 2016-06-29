@@ -56,6 +56,8 @@ class USBDevice(object):
 
 class _USBDeviceManager(object):
 
+    device_class = USBDevice
+
     def __init__(self):
         connected_devices = [
             device_info.get('path')
@@ -74,7 +76,7 @@ class _USBDeviceManager(object):
             else:
                 devices.append(device)
 
-        self._devices = [USBDevice(device) for device in devices]
+        self._devices = [self.device_class(device) for device in devices]
 
     def __call__(self, *args, **kwargs):
         return self

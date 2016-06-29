@@ -98,11 +98,13 @@ class USBDevice(object):
 
 class _USBDeviceManager(object):
 
+    device_class = USBDevice
+
     def __init__(self):
         devices = usb.core.find(find_all=True,
                                 custom_match=
                                     lambda x: (x.idVendor, x.idProduct) in SUPPORTED_DEVICES)
-        self._devices = [USBDevice(device) for device in devices]
+        self._devices = [self.device_class(device) for device in devices]
 
     def __call__(self, *args, **kwargs):
         return self

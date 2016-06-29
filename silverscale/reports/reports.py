@@ -103,7 +103,9 @@ class DataReport(object):
 
     @property
     def stable(self):
-        return self._status == 'Weight Stable'
+        return (
+            (self._status == 'Weight Stable') or
+            (self._status == 'Stable at Center of Zero'))
 
     @property
     def status(self):
