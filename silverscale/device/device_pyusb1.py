@@ -127,7 +127,3 @@ class _USBDeviceManager(object):
         for device in self._devices:
             device.disconnect()
 
-
-USBDeviceManager = _USBDeviceManager()
-USBDevice._manager = USBDeviceManager
-

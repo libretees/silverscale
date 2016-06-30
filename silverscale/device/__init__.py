@@ -1,3 +1,3 @@
-from .importer import USBDevice, USBDeviceManager
+from .importer import USBDevice
 from .scale import Scale, ScaleManager
 

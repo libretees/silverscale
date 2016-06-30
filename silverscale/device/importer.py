@@ -11,7 +11,6 @@ for module_name in ('device_libusb1', 'device_pyusb1', 'device_cython_hidapi'):
         module = import_module('.' + module_name, package='silverscale.device')
         USBDevice = getattr(module, 'USBDevice')
         _USBDeviceManager = getattr(module, '_USBDeviceManager')
-        USBDeviceManager = getattr(module, 'USBDeviceManager')
         break
     except ImportError as error:
         logger.info('Could not import USB library (%s).' % str(error))
