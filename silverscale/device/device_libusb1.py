@@ -68,7 +68,7 @@ class USBDevice(object):
     def disconnect(self):
         if self._device_handle is not None:
             if self._reattach:
-                self._device_handle.attachKernelDriver(self._interface)
+                self._device_handle.attachKernelDriver(self._interface.getNumber())
             self._device_handle.close()
 
         self._device.close()
