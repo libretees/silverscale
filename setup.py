@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 from distutils.core import setup
+from pip.req import parse_requirements
+
+requirements_file = parse_requirements('requirements_pyusb.txt', session=False)
+requirements = [str(line.req) for line in requirements_file]
 
 setup(
     name = 'silverscale',
@@ -8,8 +12,7 @@ setup(
     author = 'Jared Contrascere',
     author_email = 'jcontra@gmail.com',
     url = 'https://github.com/libretees/silverscale',
-    install_requires=['Cython==0.22.1',
-                      'hidapi==0.7.99-6',],
+    install_requires=requirements,
     classifiers=[
           'Development Status :: 3 - Alpha',
           'Intended Audience :: Developers',
