@@ -7,7 +7,7 @@ requirements = [str(line.req) for line in requirements_file]
 
 setup(
     name = 'silverscale',
-    version = '0.3',
+    version = '0.3.1',
     description = 'Retrieve data from HID USB Scales.',
     author = 'Jared Contrascere',
     author_email = 'jcontra@gmail.com',
