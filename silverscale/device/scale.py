@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import logging
 from .importer import _USBDeviceManager, USBDevice
 from ..reports import *
 
+logger = logging.getLogger(__name__)
 
 class Scale(USBDevice):
 
@@ -30,7 +32,11 @@ class Scale(USBDevice):
 
     def read(self):
         report_data = super(Scale, self).read(packet_size=6)
-        report = REPORT_TYPES[report_data[0]](report_data)
+        report = None
+        try:
+            report = REPORT_TYPES[report_data[0]](report_data)
+        except KeyError as e:
+            logger.info('Malformed data received from scale (%s).', report_data)
 
         if isinstance(report, DataReport):
             self._stable = report.stable

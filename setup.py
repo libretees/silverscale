@@ -1,18 +1,17 @@
 #!/usr/bin/env python
 from distutils.core import setup
-from pip.req import parse_requirements
-
-requirements_file = parse_requirements('requirements_pyusb.txt', session=False)
-requirements = [str(line.req) for line in requirements_file]
 
 setup(
     name = 'silverscale',
-    version = '0.3.1',
+    packages = [
+        'silverscale', 'silverscale.device', 'silverscale.reports'
+    ],
+    version = '0.3.6',
     description = 'Retrieve data from HID USB Scales.',
     author = 'Jared Contrascere',
     author_email = 'jcontra@gmail.com',
     url = 'https://github.com/libretees/silverscale',
-    install_requires=requirements,
+    install_requires=['pyusb'],
     classifiers=[
           'Development Status :: 3 - Alpha',
           'Intended Audience :: Developers',
