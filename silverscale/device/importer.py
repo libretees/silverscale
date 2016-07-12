@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import faulthandler
 import logging
 from importlib import import_module
 
 logger = logging.getLogger(__name__)
+
+faulthandler.enable()
 
 for module_name in ('device_libusb1', 'device_pyusb1', 'device_cython_hidapi'):
     try:
@@ -16,4 +19,3 @@ for module_name in ('device_libusb1', 'device_pyusb1', 'device_cython_hidapi'):
         logger.info('Could not import USB library (%s).' % str(error))
 else:
     raise ImportError('No USB library found.')
-
