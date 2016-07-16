@@ -6,7 +6,7 @@ setup(
     packages = [
         'silverscale', 'silverscale.device', 'silverscale.reports'
     ],
-    version = '0.3.6',
+    version = '0.3.7',
     description = 'Retrieve data from HID USB Scales.',
     author = 'Jared Contrascere',
     author_email = 'jcontra@gmail.com',
