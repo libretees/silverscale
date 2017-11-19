@@ -13,6 +13,8 @@ Dependencies
 Dependency Installation
 -----------------------
 
+.. code-block:: bash
+
     # apt-get update
     # apt-get install -y libudev-dev python-dev python3-dev
     $ wget http://sourceforge.net/projects/libusb/files/libusb-1.0/libusb-1.0.19/libusb-1.0.19.tar.bz2
