@@ -30,6 +30,7 @@ USB_IDS = {
         'name': 'X.J.GROUP',
         'devices': {
             0x6a73: 'Stamps.com Model 510 5LB Scale',
+            0x6a76: 'Stamps.com Model 2510 25LB Scale',
             0x6a78: 'DYMO Endicia 75lb Digital Scale'
         }
     },
